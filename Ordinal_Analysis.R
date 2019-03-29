@@ -24,7 +24,7 @@ library(modelr)
 
 
 # # # # # # # # # # 
-# Loading data ----
+# Loading data ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # # # # # # # # # # 
 smnet <- read_csv('Questionnaire_processed_JFP.csv')
 # glimpse(smnet)
@@ -113,49 +113,26 @@ smnet <- smnet %>%
 # glimpse(smnet)
 
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# Q9.	Main priorities influencing saltmarsh management in your region ----
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # 
+# ORDINAL ANALYSIS WITH Q9, Q11, Q14, Q15, Q18, Q19 ---------------------------------------------------------------------------------------
+# # # # # # # # # # # # # # # # # # # # # # # # # # 
 
-q9lev <- rev(c("Q9ProtectSLR",
-               "Q9ProtectErosion",
-               "Q9ProtectSurge",
-               "Q9ProtectRiver",
-               "Q9MinEnvHazards",
-               "Q9PreventBiodivLoss",
-               "Q9ReduceImpacts NatResExploit",
-               "Q9MinEffectPollut",
-               "Q9ReduceExcessNut",
-               "Q9SupportClimRegul",
-               "Q9ReduceLossLand",
-               "Q9ManageInvasives",
-               "Q9SuppSensePlace"))
-
-# foo <- smnet %>%
-#   select(c(Q1, Q2, Q5, Q6, Q7_country, Q7_continent, Q8, starts_with("Q9"))) %>%
-#   filter(Q9SuppSensePlace %in% c(NA, 1:6)) %>%
-#   gather(key = items, value = answer, Q9ProtectSLR:Q9SuppSensePlace) %>%
-#   filter(answer != 6) %>%
-#   mutate(answer = factor(answer),
-#          items = factor(items, levels = q9lev)) %>%
-#   filter(items == "Q9ProtectSLR") %>%
-#   na.omit()
-
-smnetQ9 <- smnet %>% 
-  select(c(Q1, Q2, Q5, Q6, Q7_country, Q7_continent, Q8, starts_with("Q9"))) %>% 
-  filter(Q9SuppSensePlace %in% c(NA, 1:6)) %>% 
-  gather(key = items, value = answer, Q9ProtectSLR:Q9SuppSensePlace) %>% 
-  filter(answer != 6) %>% 
-  mutate(answer = factor(answer),
-         items = factor(items, levels = q9lev)) %>% 
+smnet_long <- smnet %>% 
+  select(c(Q1, Q2, Q5, Q6, Q7_country, Q7_continent, Q8, starts_with("Q9"), starts_with("Q11"),
+           starts_with("Q14"), Q15, starts_with("Q18"), starts_with("Q19"))) %>% 
+  gather(key = items, value = answer, Q9ProtectSLR:Q19Wildfood) %>% 
+  filter(answer %in% c(NA, 1:6)) %>% # Because for Q9SuppSensePlace there's an answer == 0 (weird)
+  filter(answer != 6) %>%  # To delete unsures, which is difficult to put as being part of an ordered factor.
+  mutate(answer = factor(answer, ordered = T),
+         items = factor(items)) %>% 
   na.omit()
 
 # Nested data frame
-by_itemsQ9 <-  smnetQ9 %>%
+by_items_ordinal <-  smnet_long %>%
   group_by(items) %>% 
   nest()
 
-# by_items$data[[1]]
+# by_items_ordinal$data[[1]]
 
 # Now that we have our nested data frame we're in good position to fit some models. 
 # We have a model fitting function:
@@ -208,7 +185,7 @@ model_Anova_unnested <- model_all_nested %>%
   unnest(anova2)
 
 
-# To do a new commit
+
 
 
 
