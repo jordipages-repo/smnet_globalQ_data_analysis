@@ -143,28 +143,28 @@ ordinal_items <- function(df){
   clm(formula_selected, data = df)
 }
 
-# model <- map(by_items$data, ordinal_items)
+# model <- map(by_items_ordinal$data, ordinal_items)
 
 # And we want to apply it to every data frame. Since the data frames are inside a nested data frame, 
 # we use purrr::map() to apply ordinal_items to each eleemnt
-by_itemsQ9 <- by_itemsQ9 %>%
+by_items_ordinal <- by_items_ordinal %>%
   mutate(model = map(data, ordinal_items))
 
 
-# car::Anova(by_items$model[[1]])
-# nominal_test(by_items$model[[1]])
-# scale_test(by_items$model[[1]])
+# car::Anova(by_items_ordinal$model[[1]])
+# nominal_test(by_items_ordinal$model[[1]])
+# scale_test(by_items_ordinal$model[[1]])
 
-by_itemsQ9
+by_items_ordinal
 # to extract model quality measures from a model we can use broom::glance()
 # For a lot of models, we will use mutate() and unnest()
-# by_itemsQ9 %>% 
+# by_items_ordinal %>% 
 #   mutate(glance = map(model, broom::glance)) %>% 
 #   unnest(glance)
 
 # To get the model fit values, we unnest
 # If we just want the variables and model outputs without the nested columns, do .drop = TRUE in unnest():
-model_all_nested <- by_itemsQ9 %>% 
+model_all_nested <- by_items_ordinal %>% 
   mutate(hessian = map_dbl(model, "cond.H"),
          formula = map(model, "formula")) 
 
@@ -173,16 +173,29 @@ model_fit_unnested <- model_all_nested %>%
   unnest(tidy) %>% 
   filter(coefficient_type != "alpha")
 
-# model_hessian_formula <- by_itemsQ9 %>% 
+# model_hessian_formula <- by_items_ordinal %>% 
 #   mutate(hessian = map_dbl(model, "cond.H"),
 #          formula = map(model, "formula")) %>% 
 #   select(items, hessian, formula)
 
 model_Anova_unnested <- model_all_nested %>%
   filter(formula != "answer ~ 1") %>% 
+  filter(hessian < 10000) %>%     # This is one of the assumptions of ordinal analysis. 
+                                  # It is a measure of how identifiable the model is
+  # filter(str_detect(items, "Q9|Q11|Q14|Q15|Q18")) %>% 
   mutate(anova = map(model, car::Anova),
          anova2 = map(anova, broom::tidy)) %>% 
   unnest(anova2)
+
+write_excel_csv(model_Anova_unnested, "Tables/Ordinal_Main_Effects_Results.csv")
+write_excel_csv(model_fit_unnested, "Tables/Ordinal_Summary_Table_Results.csv")
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# WE ARE JUST LACKING NOMINAL AND SCALE TESTS (ASSUMPTIONS OF ORDINAL ANALYSIS) #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 
 
 
@@ -203,6 +216,3 @@ model_Anova_unnested <- model_all_nested %>%
 # Old trials
 # group_by(items) %>%
   # do(model = as.character(step(clm(answer ~ Q1 + Q2 + Q5 + Q6 + Q7_continent + Q8, data = .), trace = 0)$formula))
-
-  
-  
