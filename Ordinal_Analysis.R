@@ -187,8 +187,8 @@ model_Anova_unnested <- model_all_nested %>%
          anova2 = map(anova, broom::tidy)) %>% 
   unnest(anova2)
 
-write_excel_csv(model_Anova_unnested, "Tables/Ordinal_Main_Effects_Results.csv")
-write_excel_csv(model_fit_unnested, "Tables/Ordinal_Summary_Table_Results.csv")
+# write_excel_csv(model_Anova_unnested, "Tables/Ordinal_Main_Effects_Results.csv")
+# write_excel_csv(model_fit_unnested, "Tables/Ordinal_Summary_Table_Results.csv")
 
 
 
