@@ -101,9 +101,9 @@ smnet <- smnet %>%
                                `North America` = "America",
                                `South America` = "America")),
          Q8 = factor(recode(Q8, 
-                            `1` = "TechnicalSecondaryOrLess",
-                            `2` = "TechnicalSecondaryOrLess",
-                            `3` = "Diploma",
+                            `1` = "DiplomaSecondaryOrLess",
+                            `2` = "DiplomaSecondaryOrLess",
+                            `3` = "DiplomaSecondaryOrLess",
                             `4` = "Degree",
                             `5` = "Masters",
                             `6` = "PhD",
@@ -195,10 +195,17 @@ model_Anova_unnested <- model_all_nested %>%
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # WE ARE JUST LACKING NOMINAL AND SCALE TESTS (ASSUMPTIONS OF ORDINAL ANALYSIS) #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+a <- smnet_long %>% 
+  filter(items == "Q9MinEnvHazards")
+ord_a <- clm(answer ~ Q1 + Q2 + Q5 + Q6 + Q7_continent + Q8, data = a)
+step(ord_a)
+ord_a <- clm(answer ~ Q6 + Q7_continent + Q8, data = a)
+nominal_test(ord_a)
+scale_test(ord_a)
 
-
-
-
+# Not sure why tests don't work.... and even work wost with the ones below...
+nominal_test(by_items_ordinal$model[[8]])
+scale_test(by_items_ordinal$model[[8]])
 
 
 
