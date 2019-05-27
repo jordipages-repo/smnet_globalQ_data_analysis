@@ -187,13 +187,13 @@ model_Anova_unnested <- model_all_nested %>%
          anova2 = map(anova, broom::tidy)) %>% 
   unnest(anova2)
 
-# write_excel_csv(model_Anova_unnested, "Tables/Ordinal_Main_Effects_Results.csv")
-# write_excel_csv(model_fit_unnested, "Tables/Ordinal_Summary_Table_Results.csv")
+# write_excel_csv(model_Anova_unnested, "Tables/Ordinal_Main_Effects_Results_14May.csv")
+# write_excel_csv(model_fit_unnested, "Tables/Ordinal_Summary_Table_Results_14May.csv")
 
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# WE ARE JUST LACKING NOMINAL AND SCALE TESTS (ASSUMPTIONS OF ORDINAL ANALYSIS) #
+# WE ARE JUST LACKING NOMINAL AND SCALE TESTS (ASSUMPTIONS OF ORDINAL ANALYSIS)------ 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 a <- smnet_long %>% 
   filter(items == "Q9MinEnvHazards")
@@ -203,9 +203,154 @@ ord_a <- clm(answer ~ Q6 + Q7_continent + Q8, data = a)
 nominal_test(ord_a)
 scale_test(ord_a)
 
-# Not sure why tests don't work.... and even work wost with the ones below...
+# Not sure why tests don't work.... and even work worst with the ones below...
 nominal_test(by_items_ordinal$model[[8]])
 scale_test(by_items_ordinal$model[[8]])
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # 
+# NOMINAL ANALYSIS WITH Q12 ---------------------------------------------------------------------------------------
+# # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+# See Bryman 2012 (social research methods). See also https://www.tutorialspoint.com/r/r_chi_square_tests.htm
+# Whe both the response and predictor variables are nominal (categorical) we study them with a chi square test +
+# Phi or Cramér's V statistics
+chisq_Q12 <- smnet %>% 
+  select(c(starts_with("Q12"), Q7_continent)) %>% 
+  gather(key = items, value = answer, Q12RAMSAR:Q12NotProtect) %>% 
+  mutate(answerOK = recode(answer, 
+                           `0` = "No",
+                           `1` = "Yes")) %>% 
+  select(-answer) %>% 
+  filter(!is.na(answerOK)) %>%
+  filter(!is.na(Q7_continent)) %>% 
+  group_by(items) %>% 
+  summarise(p_value = chisq.test(Q7_continent, answerOK)$p.value)
+
+#	Chisq.test
+# items                 p_value
+#	Q12LocalProtect	      7.108766e-01
+# Q12NationalProtect	  5.719477e-03 **
+# Q12NotProtect	        6.608182e-01
+# Q12PrivateProtect	    2.662003e-03 **
+# Q12RAMSAR	            1.082846e-07 ***
+# Q12SubNationalProtec	4.207584e-06 ***
+# Q12SupranatProtect	  1.255424e-24 ***
+
+smnet %>% 
+  select(c(starts_with("Q12"), Q7_continent)) %>% 
+  gather(key = items, value = answer, Q12RAMSAR:Q12NotProtect) %>% 
+  mutate(answerOK = recode(answer, 
+                           `0` = "No",
+                           `1` = "Yes")) %>% 
+  select(-answer) %>% 
+  filter(!is.na(answerOK)) %>%
+  filter(!is.na(Q7_continent)) %>% 
+  group_by(Q7_continent, items, answerOK) %>% 
+  summarise(n = n()) %>%
+  mutate(percent = 100*(n/sum(n))) %>% 
+  ggplot() +
+  geom_bar(aes(y = percent, x = Q7_continent, fill = answerOK), stat = "identity") +
+  scale_fill_manual(values = c("#395B8B", "#4EC173")) +
+  coord_flip() +
+  facet_wrap(~items)
+
+# ggsave(filename = "Figs/Q12_by_continent_chisq.pdf")
+
+
+  
+# # # # # # # # # # # # # # # # # # # # # # # # # # 
+# NOMINAL ANALYSIS WITH Q13 ---------------------------------------------------------------------------------------
+# # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+chisq_Q13 <- smnet %>% 
+  select(c(starts_with("Q13"), Q7_continent)) %>% 
+  gather(key = items, value = answer, Q13) %>% 
+  mutate(answerOK = recode(answer, 
+                           `2` = "No",
+                           `1` = "Yes")) %>% 
+  select(-answer) %>% 
+  filter(!is.na(answerOK)) %>%
+  filter(!is.na(Q7_continent)) %>% 
+  group_by(items) %>% 
+  summarise(p_value = chisq.test(Q7_continent, answerOK)$p.value)
+
+#	Chisq.test
+# items     p_value
+#	Q13       0.1382057
+
+smnet %>% 
+  select(c(starts_with("Q13"), Q7_continent)) %>% 
+  gather(key = items, value = answer, Q13) %>% 
+  mutate(answerOK = recode(answer, 
+                           `2` = "No",
+                           `1` = "Yes")) %>% 
+  select(-answer) %>% 
+  filter(!is.na(answerOK)) %>%
+  filter(!is.na(Q7_continent)) %>% 
+  group_by(Q7_continent, items, answerOK) %>% 
+  summarise(n = n()) %>%
+  mutate(percent = 100*(n/sum(n))) %>% 
+  ggplot() +
+  geom_bar(aes(y = percent, x = Q7_continent, fill = answerOK), stat = "identity") +
+  scale_fill_manual(values = c("#395B8B", "#4EC173"))
+# ggsave(filename = "Figs/Q13_by_continent_chisq.pdf")
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # 
+# NOMINAL ANALYSIS WITH Q17 ---------------------------------------------------------------------------------------
+# # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+chisq_Q17 <- smnet %>% 
+  select(c(starts_with("Q17"), Q7_continent)) %>% 
+  gather(key = items, value = answer, Q17ClimRegul:Q17NutCycl) %>% 
+  mutate(answerOK = recode(answer, 
+                           `0` = "No",
+                           `1` = "Yes")) %>% 
+  select(-answer) %>% 
+  filter(!is.na(answerOK)) %>%
+  filter(!is.na(Q7_continent)) %>% 
+  group_by(items) %>% 
+  summarise(p_value = chisq.test(Q7_continent, answerOK)$p.value)
+
+#	Chisq.test
+# items                  p_value
+# Q17Agric              9.16e- 8
+# Q17Arts               3.51e- 5
+# Q17ClimRegul          8.25e- 2
+# Q17Coast_protect      1.06e- 3
+# Q17ConservProtectSpec 7.40e- 4
+# Q17Fish               8.48e- 2
+# Q17Habitat            4.86e- 4
+# Q17Health             1.62e- 4
+# Q17Landscape          4.02e- 3
+# Q17NutCycl            8.48e-10
+# Q17PestRegul          1.84e- 1
+# Q17Pollinat           3.96e- 3
+# Q17Recre              1.18e- 2
+# Q17SensePlace         2.01e- 8
+# Q17WaterQualRegul     1.87e- 3
+# Q17WildFood           7.89e- 3
+
+smnet %>% 
+  select(c(starts_with("Q17"), Q7_continent)) %>% 
+  gather(key = items, value = answer, Q17ClimRegul:Q17NutCycl) %>% 
+  mutate(answerOK = recode(answer, 
+                           `0` = "No",
+                           `1` = "Yes")) %>% 
+  select(-answer) %>% 
+  filter(!is.na(answerOK)) %>%
+  filter(!is.na(Q7_continent)) %>% 
+  group_by(Q7_continent, items, answerOK) %>% 
+  summarise(n = n()) %>%
+  mutate(percent = 100*(n/sum(n))) %>% 
+  ggplot() +
+  geom_bar(aes(y = percent, x = Q7_continent, fill = answerOK), stat = "identity") +
+  scale_fill_manual(values = c("#395B8B", "#4EC173")) +
+  facet_wrap(~items)
+# ggsave(filename = "Figs/Q17_by_continent_chisq.pdf")
 
 
 

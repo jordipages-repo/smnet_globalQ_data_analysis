@@ -74,6 +74,13 @@ smnet %>%
 # ggsave("Q0_Barplot_Language_by_Country_count.pdf")
   
 
+# % respondents by continent
+smnet %>% 
+  group_by(Q7_continent) %>% 
+  filter(!is.na(Q7_continent)) %>% 
+  summarise(n = n()) %>% 
+  mutate(percent = 100*(n/sum(n)))
+
 
 # Mapping the number of respondents, by country of origin ----
 smnetcountry <- smnet %>% 

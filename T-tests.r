@@ -51,7 +51,26 @@ q9lev <- rev(c("Q9ProtectSLR",
                "Q9ManageInvasives",
                "Q9SuppSensePlace"))
 
-dplyrTtest <- smnet %>% 
+# T-tests
+# dplyrTtest <- smnet %>% 
+#   select(starts_with("Q9")) %>% 
+#   filter(Q9SuppSensePlace %in% c(NA, 1:6)) %>% 
+#   gather(key = items, value = answer) %>% 
+#   filter(answer != 6) %>% 
+#   mutate(answer = answer,
+#          items = factor(items, levels = q9lev)) %>% 
+#   print() %>% 
+#   group_by(items) %>% 
+#   summarise(t_test_estimate = t.test(as.data.frame(answer), mu = 3)$estimate,
+#             t_confint_low = t.test(as.data.frame(answer), mu = 3)$conf.int[1],
+#             t_confint_high = t.test(as.data.frame(answer), mu = 3)$conf.int[2],
+#             shapiro_test = shapiro.test(as.numeric(answer))$p.value)
+
+# Agh... shapiro.test is highly significant for all response variables
+# I will have to run a wilcoxon test. Instead. 
+
+# Wilcoxon tests
+dplyrWilcoxtest <- smnet %>% 
   select(starts_with("Q9")) %>% 
   filter(Q9SuppSensePlace %in% c(NA, 1:6)) %>% 
   gather(key = items, value = answer) %>% 
@@ -60,9 +79,10 @@ dplyrTtest <- smnet %>%
          items = factor(items, levels = q9lev)) %>% 
   print() %>% 
   group_by(items) %>% 
-  summarise(t_test_estimate = t.test(as.data.frame(answer), mu = 3)$estimate,
-            t_confint_low = t.test(as.data.frame(answer), mu = 3)$conf.int[1],
-            t_confint_high = t.test(as.data.frame(answer), mu = 3)$conf.int[2])
+  summarise(wilcox_test_estimate = wilcox.test(as.numeric(answer), mu = 3, conf.int = T)$estimate,
+            wilcox_confint_low = wilcox.test(as.numeric(answer), mu = 3, conf.int = T)$conf.int[1],
+            wilcox_confint_high = wilcox.test(as.numeric(answer), mu = 3, conf.int = T)$conf.int[2],
+            wilcox_test_pvalue = wilcox.test(as.numeric(answer), mu = 3, conf.int = T)$p.value)
 
 count_unsure <- smnet %>% 
   select(starts_with("Q9")) %>% 
@@ -75,11 +95,11 @@ count_unsure <- smnet %>%
             unsure = sum(answer == 6, na.rm = T),
             percent_unsure = 100*(unsure/n))
 
-dplyrTtest$unsures <- count_unsure$percent_unsure
+dplyrWilcoxtest$unsures <- count_unsure$percent_unsure
 
-p1 <- ggplot(data = dplyrTtest, aes(x = items, y = t_test_estimate)) +
+p1 <- ggplot(data = dplyrWilcoxtest, aes(x = items, y = wilcox_test_estimate)) +
   geom_point(size = 1.5) +
-  geom_errorbar(aes(ymin = t_confint_low, ymax = t_confint_high), width=.2, position = position_dodge(.9)) +
+  geom_errorbar(aes(ymin = wilcox_confint_low, ymax = wilcox_confint_high), width=.2, position = position_dodge(.9)) +
   scale_y_continuous(breaks = 1:5, 
                      limits = c(1,5),
                      labels = c("Not\nimportant",
@@ -104,7 +124,7 @@ p1 <- ggplot(data = dplyrTtest, aes(x = items, y = t_test_estimate)) +
   coord_flip() + 
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-p2 <- ggplot(data = dplyrTtest, aes(x = items, y = unsures)) +
+p2 <- ggplot(data = dplyrWilcoxtest, aes(x = items, y = unsures)) +
   # geom_point(size = 2) +
   geom_bar(stat = "identity", fill = "#440154FF") +
   ylim(c(0,20)) +
@@ -126,7 +146,7 @@ p2 <- ggplot(data = dplyrTtest, aes(x = items, y = unsures)) +
   theme(plot.margin = unit(c(5.5, 6, 23.3, 0), "pt")) #top, right, bottom, left
 
 ml <- grid.arrange(p1, p2, widths = c(3,1), nrow = 1, top = "Q9. What are the main priorities influencing saltmarsh management in your region?")
-# ggsave("Q9_Ttest.pdf", ml)
+# ggsave("Figs/Q9_WilcoxTest.pdf", ml)
 
 
 
@@ -146,8 +166,25 @@ q11lev <- rev(c("Q11InternatPolicy",
                 "Q11AvailableMoney",
                 "Q11AvailableEquipment-Staff"))
 
+# T-tests
+# dplyrTtest <- smnet %>% 
+#   select(starts_with("Q11")) %>% 
+#   gather(key = items, value = answer) %>% 
+#   filter(answer != 6) %>% 
+#   mutate(answer = answer,
+#          items = factor(items, levels = q11lev)) %>% 
+#   print() %>% 
+#   group_by(items) %>% 
+#   summarise(t_test_estimate = t.test(as.data.frame(answer), mu = 3)$estimate,
+#             t_confint_low = t.test(as.data.frame(answer), mu = 3)$conf.int[1],
+#             t_confint_high = t.test(as.data.frame(answer), mu = 3)$conf.int[2],
+#             shapiro_test = shapiro.test(as.numeric(answer))$p.value)
 
-dplyrTtest <- smnet %>% 
+# Agh... shapiro.test is highly significant for all response variables
+# I will have to run a wilcoxon test. Instead. 
+
+# Wilcoxon tests
+dplyrWilcoxtest <- smnet %>% 
   select(starts_with("Q11")) %>% 
   gather(key = items, value = answer) %>% 
   filter(answer != 6) %>% 
@@ -155,9 +192,10 @@ dplyrTtest <- smnet %>%
          items = factor(items, levels = q11lev)) %>% 
   print() %>% 
   group_by(items) %>% 
-  summarise(t_test_estimate = t.test(as.data.frame(answer), mu = 3)$estimate,
-            t_confint_low = t.test(as.data.frame(answer), mu = 3)$conf.int[1],
-            t_confint_high = t.test(as.data.frame(answer), mu = 3)$conf.int[2])
+  summarise(wilcox_test_estimate = wilcox.test(as.numeric(answer), mu = 3, conf.int = T)$estimate,
+            wilcox_confint_low = wilcox.test(as.numeric(answer), mu = 3, conf.int = T)$conf.int[1],
+            wilcox_confint_high = wilcox.test(as.numeric(answer), mu = 3, conf.int = T)$conf.int[2],
+            wilcox_p.value = wilcox.test(as.numeric(answer), mu = 3, conf.int = T)$p.value)
 
 count_unsure <- smnet %>% 
   select(starts_with("Q11")) %>% 
@@ -169,11 +207,11 @@ count_unsure <- smnet %>%
             unsure = sum(answer == 6, na.rm = T),
             percent_unsure = 100*(unsure/n))
 
-dplyrTtest$unsures <- count_unsure$percent_unsure
+dplyrWilcoxtest$unsures <- count_unsure$percent_unsure
 
-p1 <- ggplot(data = dplyrTtest, aes(x = items, y = t_test_estimate)) +
+p1 <- ggplot(data = dplyrWilcoxtest, aes(x = items, y = wilcox_test_estimate)) +
   geom_point(size = 1.5) +
-  geom_errorbar(aes(ymin = t_confint_low, ymax = t_confint_high), width=.2, position = position_dodge(.9)) +
+  geom_errorbar(aes(ymin = wilcox_confint_low, ymax = wilcox_confint_high), width=.2, position = position_dodge(.9)) +
   scale_y_continuous(breaks = 1:5, 
                      limits = c(1,5),
                      labels = c("Not\nimportant",
@@ -193,7 +231,7 @@ p1 <- ggplot(data = dplyrTtest, aes(x = items, y = t_test_estimate)) +
   coord_flip() + 
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-p2 <- ggplot(data = dplyrTtest, aes(x = items, y = unsures)) +
+p2 <- ggplot(data = dplyrWilcoxtest, aes(x = items, y = unsures)) +
   # geom_point(size = 2) +
   geom_bar(stat = "identity", fill = "#440154FF") +
   ylim(c(0,20)) +
@@ -215,7 +253,7 @@ p2 <- ggplot(data = dplyrTtest, aes(x = items, y = unsures)) +
   theme(plot.margin = unit(c(5.5, 6, 23.3, 0), "pt")) #top, right, bottom, left
 
 ml <- grid.arrange(p1, p2, widths = c(3,1), nrow = 1, top = "Q11. What are the main drivers influencing saltmarsh management in your region?")
-# ggsave("Q11_Ttest.pdf", ml)
+# ggsave("Figs/Q11_WilcoxTest.pdf", ml)
 
 
 
@@ -239,7 +277,25 @@ q14lev <- rev(c("Q14A_SM_EffectivelyProtected",
                       "Q14A_need4holisticApp",
                       "Q14A_restoringSedInputsCrucial"))
 
-dplyrTtest <- smnet %>% 
+# T-tests
+# dplyrTtest <- smnet %>% 
+#   select(starts_with("Q14")) %>% 
+#   gather(key = items, value = answer) %>% 
+#   filter(answer != 6) %>% 
+#   mutate(answer = answer,
+#          items = factor(items, levels = q14lev)) %>% 
+#   print() %>% 
+#   group_by(items) %>% 
+#   summarise(t_test_estimate = t.test(as.data.frame(answer), mu = 3)$estimate,
+#             t_confint_low = t.test(as.data.frame(answer), mu = 3)$conf.int[1],
+#             t_confint_high = t.test(as.data.frame(answer), mu = 3)$conf.int[2],
+#             shapiro_test = shapiro.test(as.numeric(answer))$p.value)
+
+# Agh... shapiro.test is highly significant for all response variables
+# I will have to run a wilcoxon test. Instead. 
+
+# Wilcoxon tests
+dplyrWilcoxtest <- smnet %>% 
   select(starts_with("Q14")) %>% 
   gather(key = items, value = answer) %>% 
   filter(answer != 6) %>% 
@@ -247,9 +303,10 @@ dplyrTtest <- smnet %>%
          items = factor(items, levels = q14lev)) %>% 
   print() %>% 
   group_by(items) %>% 
-  summarise(t_test_estimate = t.test(as.data.frame(answer), mu = 3)$estimate,
-            t_confint_low = t.test(as.data.frame(answer), mu = 3)$conf.int[1],
-            t_confint_high = t.test(as.data.frame(answer), mu = 3)$conf.int[2])
+  summarise(wilcox_test_estimate = wilcox.test(as.numeric(answer), mu = 3, conf.int = T)$estimate,
+            wilcox_confint_low = wilcox.test(as.numeric(answer), mu = 3, conf.int = T)$conf.int[1],
+            wilcox_confint_high = wilcox.test(as.numeric(answer), mu = 3, conf.int = T)$conf.int[2],
+            wilcox_test_pvalue = wilcox.test(as.numeric(answer), mu = 3, conf.int = T)$p.value)
 
 count_unsure <- smnet %>% 
   select(starts_with("Q14")) %>% 
@@ -261,11 +318,11 @@ count_unsure <- smnet %>%
             unsure = sum(answer == 6, na.rm = T),
             percent_unsure = 100*(unsure/n))
 
-dplyrTtest$unsures <- count_unsure$percent_unsure
+dplyrWilcoxtest$unsures <- count_unsure$percent_unsure
 
-p1 <- ggplot(data = dplyrTtest, aes(x = items, y = t_test_estimate)) +
+p1 <- ggplot(data = dplyrWilcoxtest, aes(x = items, y = wilcox_test_estimate)) +
   geom_point(size = 1.5) +
-  geom_errorbar(aes(ymin = t_confint_low, ymax = t_confint_high), width=.2, position = position_dodge(.9)) +
+  geom_errorbar(aes(ymin = wilcox_confint_low, ymax = wilcox_confint_high), width=.2, position = position_dodge(.9)) +
   scale_y_continuous(breaks = 1:5, 
                      limits = c(1,5),
                      labels = c("Strongly\ndisagree",
@@ -289,7 +346,7 @@ p1 <- ggplot(data = dplyrTtest, aes(x = items, y = t_test_estimate)) +
   coord_flip() + 
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-p2 <- ggplot(data = dplyrTtest, aes(x = items, y = unsures)) +
+p2 <- ggplot(data = dplyrWilcoxtest, aes(x = items, y = unsures)) +
   # geom_point(size = 2) +
   geom_bar(stat = "identity", fill = "#440154FF") +
   ylim(c(0,20)) +
@@ -311,7 +368,7 @@ p2 <- ggplot(data = dplyrTtest, aes(x = items, y = unsures)) +
   theme(plot.margin = unit(c(5.5, 6, 35, 0), "pt")) #top, right, bottom, left
 
 ml <- grid.arrange(p1, p2, widths = c(3,1), nrow = 1, top = 'Q14. Please indicate your level of agreement with the following statements\nabout saltmarshes, the threats they face and their management')
-# ggsave("Q14_Ttest.pdf", ml)
+# ggsave("Figs/Q14_WilcoxTest.pdf", ml)
 
 
 
@@ -335,8 +392,25 @@ q18lev <- rev(c("Q18SMimportFoodProvision",
                       "Q18SMimportantSensePlace",
                       "Q18SMimportantReligion"))
 
+# T-tests
+# dplyrTtest <- smnet %>% 
+#   select(starts_with("Q18")) %>% 
+#   gather(key = items, value = answer) %>% 
+#   filter(answer != 6) %>% 
+#   mutate(answer = answer,
+#          items = factor(items, levels = q18lev)) %>% 
+#   print() %>% 
+#   group_by(items) %>% 
+#   summarise(t_test_estimate = t.test(as.data.frame(answer), mu = 3)$estimate,
+#             t_confint_low = t.test(as.data.frame(answer), mu = 3)$conf.int[1],
+#             t_confint_high = t.test(as.data.frame(answer), mu = 3)$conf.int[2], 
+#             shapiro_test = shapiro.test(as.numeric(answer))$p.value)
 
-dplyrTtest <- smnet %>% 
+# Agh... shapiro.test is highly significant for all response variables
+# I will have to run a wilcoxon test. Instead. 
+
+# Wilcoxon tests
+dplyrWilcoxtest <- smnet %>% 
   select(starts_with("Q18")) %>% 
   gather(key = items, value = answer) %>% 
   filter(answer != 6) %>% 
@@ -344,9 +418,9 @@ dplyrTtest <- smnet %>%
          items = factor(items, levels = q18lev)) %>% 
   print() %>% 
   group_by(items) %>% 
-  summarise(t_test_estimate = t.test(as.data.frame(answer), mu = 3)$estimate,
-            t_confint_low = t.test(as.data.frame(answer), mu = 3)$conf.int[1],
-            t_confint_high = t.test(as.data.frame(answer), mu = 3)$conf.int[2])
+  summarise(wilcox_test_estimate = wilcox.test(as.numeric(answer), mu = 3, conf.int = T)$estimate,
+            wilcox_confint_low = wilcox.test(as.numeric(answer), mu = 3, conf.int = T)$conf.int[1],
+            wilcox_confint_high = wilcox.test(as.numeric(answer), mu = 3, conf.int = T)$conf.int[2])
 
 count_unsure <- smnet %>% 
   select(starts_with("Q18")) %>% 
@@ -358,11 +432,11 @@ count_unsure <- smnet %>%
             unsure = sum(answer == 6, na.rm = T),
             percent_unsure = 100*(unsure/n))
 
-dplyrTtest$unsures <- count_unsure$percent_unsure
+dplyrWilcoxtest$unsures <- count_unsure$percent_unsure
 
-p1 <- ggplot(data = dplyrTtest, aes(x = items, y = t_test_estimate)) +
+p1 <- ggplot(data = dplyrWilcoxtest, aes(x = items, y = wilcox_test_estimate)) +
   geom_point(size = 1.5) +
-  geom_errorbar(aes(ymin = t_confint_low, ymax = t_confint_high), width=.2, position = position_dodge(.9)) +
+  geom_errorbar(aes(ymin = wilcox_confint_low, ymax = wilcox_confint_high), width=.2, position = position_dodge(.9)) +
   scale_y_continuous(breaks = 1:5, 
                      limits = c(1,5),
                      labels = c("Strongly\ndisagree",
@@ -387,7 +461,7 @@ p1 <- ggplot(data = dplyrTtest, aes(x = items, y = t_test_estimate)) +
   coord_flip() + 
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-p2 <- ggplot(data = dplyrTtest, aes(x = items, y = unsures)) +
+p2 <- ggplot(data = dplyrWilcoxtest, aes(x = items, y = unsures)) +
   # geom_point(size = 2) +
   geom_bar(stat = "identity", fill = "#440154FF") +
   ylim(c(0,20)) +
@@ -409,7 +483,7 @@ p2 <- ggplot(data = dplyrTtest, aes(x = items, y = unsures)) +
   theme(plot.margin = unit(c(5.5, 6, 35, 0), "pt")) #top, right, bottom, left
 
 ml <- grid.arrange(p1, p2, widths = c(3,1), nrow = 1, top = 'Q18. Please indicate how much you agree with the following statements\nabout saltmarshes in your region and their contribution to society')
-# ggsave("Q18_Ttest.pdf", ml)
+# ggsave("Figs/Q18_WilcoxTest.pdf", ml)
 
 
 
@@ -419,7 +493,25 @@ ml <- grid.arrange(p1, p2, widths = c(3,1), nrow = 1, top = 'Q18. Please indicat
 
 # Clear R memory, because some variables have the same name as in Q9's section.
 
-dplyrTtest <- smnet %>% 
+# T-tests
+# dplyrTtest <- smnet %>% 
+#   select(starts_with("Q19")) %>% 
+#   gather(key = items, value = answer) %>% 
+#   filter(answer != 6) %>% 
+#   mutate(answer = answer,
+#          items = factor(items)) %>% 
+#   print() %>% 
+#   group_by(items) %>% 
+#   summarise(t_test_estimate = t.test(as.data.frame(answer), mu = 3)$estimate,
+#             t_confint_low = t.test(as.data.frame(answer), mu = 3)$conf.int[1],
+#             t_confint_high = t.test(as.data.frame(answer), mu = 3)$conf.int[2],
+#             shapiro_test = shapiro.test(as.numeric(answer))$p.value)
+            
+# Agh... shapiro.test is highly significant for all response variables
+# I will have to run a wilcoxon test. Instead. 
+
+# Wilcoxon tests
+dplyrWilcoxtest <- smnet %>% 
   select(starts_with("Q19")) %>% 
   gather(key = items, value = answer) %>% 
   filter(answer != 6) %>% 
@@ -427,9 +519,10 @@ dplyrTtest <- smnet %>%
          items = factor(items)) %>% 
   print() %>% 
   group_by(items) %>% 
-  summarise(t_test_estimate = t.test(as.data.frame(answer), mu = 3)$estimate,
-            t_confint_low = t.test(as.data.frame(answer), mu = 3)$conf.int[1],
-            t_confint_high = t.test(as.data.frame(answer), mu = 3)$conf.int[2])
+  summarise(wilcox_test_estimate = wilcox.test(as.numeric(answer), mu = 3, conf.int = T)$estimate,
+            wilcox_confint_low = wilcox.test(as.numeric(answer), mu = 3, conf.int = T)$conf.int[1],
+            wilcox_confint_high = wilcox.test(as.numeric(answer), mu = 3, conf.int = T)$conf.int[2])
+
 
 count_unsure <- smnet %>% 
   select(starts_with("Q19")) %>% 
@@ -441,11 +534,11 @@ count_unsure <- smnet %>%
             unsure = sum(answer == 6, na.rm = T),
             percent_unsure = 100*(unsure/n))
 
-dplyrTtest$unsures <- count_unsure$percent_unsure
+dplyrWilcoxtest$unsures <- count_unsure$percent_unsure
 
-p1 <- ggplot(data = dplyrTtest, aes(x = items, y = t_test_estimate)) +
+p1 <- ggplot(data = dplyrWilcoxtest, aes(x = items, y = wilcox_test_estimate)) +
   geom_point(size = 1.5) +
-  geom_errorbar(aes(ymin = t_confint_low, ymax = t_confint_high), width=.2, position = position_dodge(.9)) +
+  geom_errorbar(aes(ymin = wilcox_confint_low, ymax = wilcox_confint_high), width=.2, position = position_dodge(.9)) +
   scale_y_continuous(breaks = 1:5, 
                      limits = c(1,5),
                      labels = c("No benefit", 
@@ -473,7 +566,7 @@ p1 <- ggplot(data = dplyrTtest, aes(x = items, y = t_test_estimate)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 
-p2 <- ggplot(data = dplyrTtest, aes(x = items, y = unsures)) +
+p2 <- ggplot(data = dplyrWilcoxtest, aes(x = items, y = unsures)) +
   # geom_point(size = 2) +
   geom_bar(stat = "identity", fill = "#440154FF") +
   ylim(c(0,20)) +
@@ -497,7 +590,7 @@ p2 <- ggplot(data = dplyrTtest, aes(x = items, y = unsures)) +
   theme(plot.margin = unit(c(5.5, 6, 28, 0), "pt")) #top, right, bottom, left
 
 ml <- grid.arrange(p1, p2, widths = c(3,1), nrow = 1, top = 'Q19. Please indicate the level of importance of the benefits\nand services provided by saltmarshes to society')
-# ggsave("Q19_Ttest.pdf", ml)
+# ggsave("Figs/Q19_WilcoxTest.pdf", ml)
 
 
 
