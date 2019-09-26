@@ -420,7 +420,8 @@ dplyrWilcoxtest <- smnet %>%
   group_by(items) %>% 
   summarise(wilcox_test_estimate = wilcox.test(as.numeric(answer), mu = 3, conf.int = T)$estimate,
             wilcox_confint_low = wilcox.test(as.numeric(answer), mu = 3, conf.int = T)$conf.int[1],
-            wilcox_confint_high = wilcox.test(as.numeric(answer), mu = 3, conf.int = T)$conf.int[2])
+            wilcox_confint_high = wilcox.test(as.numeric(answer), mu = 3, conf.int = T)$conf.int[2],
+            wilcox_test_pvalue = wilcox.test(as.numeric(answer), mu = 3, conf.int = T)$p.value)
 
 count_unsure <- smnet %>% 
   select(starts_with("Q18")) %>% 
@@ -521,7 +522,8 @@ dplyrWilcoxtest <- smnet %>%
   group_by(items) %>% 
   summarise(wilcox_test_estimate = wilcox.test(as.numeric(answer), mu = 3, conf.int = T)$estimate,
             wilcox_confint_low = wilcox.test(as.numeric(answer), mu = 3, conf.int = T)$conf.int[1],
-            wilcox_confint_high = wilcox.test(as.numeric(answer), mu = 3, conf.int = T)$conf.int[2])
+            wilcox_confint_high = wilcox.test(as.numeric(answer), mu = 3, conf.int = T)$conf.int[2],
+            wilcox_test_pvalue = wilcox.test(as.numeric(answer), mu = 3, conf.int = T)$p.value)
 
 
 count_unsure <- smnet %>% 

@@ -279,7 +279,7 @@ smnet %>%
   mutate(freq = n/sum(n)) %>% 
   ggplot(aes(x = Q13, y = freq)) +
   geom_bar(aes(fill = Q13), stat = "identity") +
-  scale_fill_manual(values = c("#395B8B", "#4EC173")) +
+  scale_fill_manual(values = c("#4EC173", "#395B8B")) +
   labs(fill = '', x = NULL, y = "Number of responses", title = 'Q13. Are there any uses that are limited/prohibited\nthrough the land protection mentioned above?') +
   theme(plot.title = element_text(hjust = 0.6))
 # ggsave(filename = "Q13_Barplot_Stacked.pdf")

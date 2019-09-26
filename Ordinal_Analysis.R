@@ -203,9 +203,26 @@ ord_a <- clm(answer ~ Q6 + Q7_continent + Q8, data = a)
 nominal_test(ord_a)
 scale_test(ord_a)
 
+
+
+
+llista <- as.character(by_items_ordinal$items)
+for(i in 1:length(items)){
+  a <- smnet_long %>% 
+    filter(items == llista[i])
+  ord_a <- clm(answer ~ Q1 + Q2 + Q5 + Q6 + Q7_continent + Q8, data = a)
+  formula <- step(ord_a, trace = F)$formula
+  ord_a <- clm(formula, data = a)
+  print(items[i])
+  print(formula)
+  print(nominal_test(ord_a))
+  print(scale_test(ord_a))
+}
+
+
 # Not sure why tests don't work.... and even work worst with the ones below...
-nominal_test(by_items_ordinal$model[[8]])
-scale_test(by_items_ordinal$model[[8]])
+nominal_test(by_items_ordinal$model[[5]])
+scale_test(by_items_ordinal$model[[5]])
 
 
 
@@ -349,6 +366,7 @@ smnet %>%
   ggplot() +
   geom_bar(aes(y = percent, x = Q7_continent, fill = answerOK), stat = "identity") +
   scale_fill_manual(values = c("#395B8B", "#4EC173")) +
+  coord_flip() +
   facet_wrap(~items)
 # ggsave(filename = "Figs/Q17_by_continent_chisq.pdf")
 
