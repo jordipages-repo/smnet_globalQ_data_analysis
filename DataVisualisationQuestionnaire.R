@@ -139,28 +139,29 @@ q9lev <- rev(c("Q9ProtectSLR",
                "Q9ManageInvasives",
                "Q9SuppSensePlace"))
 
-q9answerlev <- rev(c("Unsure", "Not important", "Slightly important", "Important", 
-                            "Very important", "Essential"))
-
-smnet %>% 
+library(cowplot)
+p1 <- smnet %>% 
   select(starts_with("Q9")) %>% 
   filter(Q9SuppSensePlace != 0) %>% # Because there's a 0 
   print() %>% 
   gather(key = items, value = answer) %>% 
+  filter(answer != 6) %>% 
   mutate(answer = factor(recode(answer,
                                 `1` = "Not important",
                                 `2` = "Slightly important",
                                 `3` = "Important",
                                 `4` = "Very important",
-                                `5` = "Essential",
-                                `6` = "Unsure"), 
-                         levels = q9answerlev),
+                                `5` = "Essential"), 
+                         levels = rev(c("Not important", 
+                                      "Slightly important", 
+                                      "Important", 
+                                      "Very Important",
+                                      "Essential"))),
          items = factor(items, levels = q9lev)) %>% 
   filter(complete.cases(.)) %>%
   ggplot(aes(x = items)) +
-  geom_bar(aes(fill = answer), position = "fill") +
-  scale_fill_manual(values = c("#9FDA3AFF", "#4AC16DFF", "#1FA187FF", "#277F8EFF", "#365C8DFF", 
-                               "#46337EFF", "#440154FF")) +
+  geom_bar(aes(fill = answer), colour = "black", position = "fill", size = 0.2) +
+  scale_fill_manual(values = rev(c("#D73027", "#FC8D59", "#ffffff", "#91BFDB", "#4575B4"))) +
   scale_x_discrete(labels = c("Support and improve sense of\nidentity and place ",
                               "Managing invasive/\nnon-native species",
                               "Reduce loss of land\nand land reclamation",
@@ -174,10 +175,68 @@ smnet %>%
                               "Protect against flooding\nfrom the sea",
                               "Protect against loss of land\nand property due to erosion",
                               "Protect against inundation\ncaused by sea level rise")) +
-  labs(fill = '', x = NULL, y = NULL, title = "Q9. What are the main priorities influencing saltmarsh management in your region?") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  # labs(fill = '', x = NULL, y = NULL, title = 'Please indicate how much you agree with the following statements about salt marshes,\nthe threats they face and their management') +
+  ylab("") + 
+  xlab("") +
   coord_flip() +
-  theme(plot.title = element_text(hjust = 0.6))
-# ggsave(filename = "Q9_Barplot_Stacked.pdf")
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.6),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.text=element_text(size=12),
+        axis.title=element_text(size=12,face="bold"),
+        legend.position = "none", 
+        legend.title = element_blank())
+
+p2 <- smnet %>% 
+  select(starts_with("Q9")) %>% 
+  filter(Q9SuppSensePlace != 0) %>% # Because there's a 0 
+  print() %>% 
+  gather(key = items, value = answer) %>% 
+  mutate(answer = factor(recode(answer,
+                                `1` = "Not important",
+                                `2` = "Slightly important",
+                                `3` = "Important",
+                                `4` = "Very important",
+                                `5` = "Essential",
+                                `6` = "Unsure"), 
+                         levels = q9answerlev),
+         items = factor(items, levels = q9lev)) %>% 
+  filter(complete.cases(.)) %>% 
+  group_by(items, answer) %>% 
+  summarise(n = n()) %>% 
+  mutate(percent = (n/sum(n))) %>% 
+  filter(answer == "Unsure") %>% 
+  ggplot() +
+  geom_bar(aes(x = items, y = percent), stat = "identity", fill = "#FEE090", colour = "black", size = 0.2) + 
+  scale_x_discrete(labels = c("",
+                              "",
+                              "",
+                              "",
+                              "",
+                              "",
+                              "",
+                              "",
+                              "",
+                              "",
+                              "",
+                              "",
+                              "")) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  labs(fill = '', x = NULL, y = '% unsure', title = '') +
+  coord_flip() +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.6),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.text=element_text(size=12),
+        axis.title=element_text(size=12,face="bold"),
+        legend.position = "none", 
+        legend.title = element_blank())
+
+plot_grid(p1, p2, rel_widths = c(4, 1), align = "h")
+# ggsave(filename = "Figs/NEW_Q9_Barplot_Stacked.pdf")
 
 
 
