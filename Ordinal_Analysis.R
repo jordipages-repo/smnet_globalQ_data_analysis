@@ -258,23 +258,40 @@ chisq_Q12 <- smnet %>%
 smnet %>% 
   select(c(starts_with("Q12"), Q7_continent)) %>% 
   gather(key = items, value = answer, Q12RAMSAR:Q12NotProtect) %>% 
-  mutate(answerOK = recode(answer, 
-                           `0` = "No",
-                           `1` = "Yes")) %>% 
+  mutate(answerOK = factor(recode(answer, 
+                                  `0` = "No",
+                                  `1` = "Yes"),
+                           levels = c("Yes", "No")),
+         items = factor(items,
+                        levels = c("Q12RAMSAR",
+                                   "Q12SupranatProtect",
+                                   "Q12NationalProtect",
+                                   "Q12SubNationalProtec",
+                                   "Q12LocalProtect",
+                                   "Q12PrivateProtect",
+                                   "Q12NotProtect"))) %>%
   select(-answer) %>% 
   filter(!is.na(answerOK)) %>%
   filter(!is.na(Q7_continent)) %>% 
   group_by(Q7_continent, items, answerOK) %>% 
   summarise(n = n()) %>%
-  mutate(percent = 100*(n/sum(n))) %>% 
+  mutate(percent = (n/sum(n))) %>% 
   ggplot() +
-  geom_bar(aes(y = percent, x = Q7_continent, fill = answerOK), stat = "identity") +
-  scale_fill_manual(values = c("#395B8B", "#4EC173")) +
+  geom_bar(aes(y = percent, x = Q7_continent, fill = answerOK), colour = "black", size = 0.2, stat = "identity") +
+  scale_fill_manual(values = rev(c("#395B8B", "#4EC173"))) +
   coord_flip() +
-  facet_wrap(~items)
-
-# ggsave(filename = "Figs/Q12_by_continent_chisq.pdf")
-
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(fill = "", x = NULL, y = NULL) +
+  facet_wrap(~items) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.6),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.text=element_text(size=12),
+        axis.title=element_text(size=12,face="bold"),
+        legend.position = "none", 
+        legend.title = element_blank())
+# ggsave(filename = "Figs/NEW_Q12_by_continent_chisqOK.pdf")
 
   
 # # # # # # # # # # # # # # # # # # # # # # # # # # 
@@ -354,21 +371,33 @@ chisq_Q17 <- smnet %>%
 smnet %>% 
   select(c(starts_with("Q17"), Q7_continent)) %>% 
   gather(key = items, value = answer, Q17ClimRegul:Q17NutCycl) %>% 
-  mutate(answerOK = recode(answer, 
+  mutate(answerOK = factor(recode(answer, 
                            `0` = "No",
-                           `1` = "Yes")) %>% 
+                           `1` = "Yes"),
+                           levels = c("Yes", "No")),
+         items = factor(items)) %>%
   select(-answer) %>% 
   filter(!is.na(answerOK)) %>%
   filter(!is.na(Q7_continent)) %>% 
   group_by(Q7_continent, items, answerOK) %>% 
   summarise(n = n()) %>%
-  mutate(percent = 100*(n/sum(n))) %>% 
+  mutate(percent = (n/sum(n))) %>% 
   ggplot() +
-  geom_bar(aes(y = percent, x = Q7_continent, fill = answerOK), stat = "identity") +
-  scale_fill_manual(values = c("#395B8B", "#4EC173")) +
+  geom_bar(aes(y = percent, x = Q7_continent, fill = answerOK), colour = "black", size = 0.2, stat = "identity") +
+  scale_fill_manual(values = rev(c("#395B8B", "#4EC173"))) +
   coord_flip() +
-  facet_wrap(~items)
-# ggsave(filename = "Figs/Q17_by_continent_chisq.pdf")
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(fill = "", x = NULL, y = NULL) +
+  facet_wrap(~items) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.6),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.text=element_text(size=12),
+        axis.title=element_text(size=12,face="bold"),
+        legend.position = "none", 
+        legend.title = element_blank())
+# ggsave(filename = "Figs/NEW_Q17_by_continent_chisqOK.pdf")
 
 
 

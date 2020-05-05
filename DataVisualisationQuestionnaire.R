@@ -10,6 +10,7 @@ library(tidyverse)
 library(tidylog)
 library(RColorBrewer)
 library(forcats)
+library(cowplot)
 
 # All colour brewer palettes
 # display.brewer.all()
@@ -139,11 +140,9 @@ q9lev <- rev(c("Q9ProtectSLR",
                "Q9ManageInvasives",
                "Q9SuppSensePlace"))
 
-library(cowplot)
 p1 <- smnet %>% 
   select(starts_with("Q9")) %>% 
   filter(Q9SuppSensePlace != 0) %>% # Because there's a 0 
-  print() %>% 
   gather(key = items, value = answer) %>% 
   filter(answer != 6) %>% 
   mutate(answer = factor(recode(answer,
@@ -155,13 +154,13 @@ p1 <- smnet %>%
                          levels = rev(c("Not important", 
                                       "Slightly important", 
                                       "Important", 
-                                      "Very Important",
+                                      "Very important",
                                       "Essential"))),
          items = factor(items, levels = q9lev)) %>% 
   filter(complete.cases(.)) %>%
   ggplot(aes(x = items)) +
   geom_bar(aes(fill = answer), colour = "black", position = "fill", size = 0.2) +
-  scale_fill_manual(values = rev(c("#D73027", "#FC8D59", "#ffffff", "#91BFDB", "#4575B4"))) +
+  scale_fill_manual(values = rev(c("#D73027","#FC8D59", "#ffffff", "#91BFDB", "#4575B4"))) +
   scale_x_discrete(labels = c("Support and improve sense of\nidentity and place ",
                               "Managing invasive/\nnon-native species",
                               "Reduce loss of land\nand land reclamation",
@@ -176,7 +175,7 @@ p1 <- smnet %>%
                               "Protect against loss of land\nand property due to erosion",
                               "Protect against inundation\ncaused by sea level rise")) +
   scale_y_continuous(labels = scales::percent_format()) +
-  # labs(fill = '', x = NULL, y = NULL, title = 'Please indicate how much you agree with the following statements about salt marshes,\nthe threats they face and their management') +
+  labs(fill = '', x = NULL, y = NULL) +
   ylab("") + 
   xlab("") +
   coord_flip() +
@@ -201,7 +200,12 @@ p2 <- smnet %>%
                                 `4` = "Very important",
                                 `5` = "Essential",
                                 `6` = "Unsure"), 
-                         levels = q9answerlev),
+                         levels = rev(c("Not important", 
+                                        "Slightly important", 
+                                        "Important", 
+                                        "Very important",
+                                        "Essential",
+                                        "Unsure"))),
          items = factor(items, levels = q9lev)) %>% 
   filter(complete.cases(.)) %>% 
   group_by(items, answer) %>% 
@@ -362,35 +366,27 @@ q14lev.items <- rev(c("Q14A_SM_EffectivelyProtected",
                 "Q14A_need4holisticApp",
                 "Q14A_restoringSedInputsCrucial"))
 
-q14answerlev <- rev(c("Unsure",
-                  "Strongly disagree",
-                  "Disagree",
-                  "Neither agree or disagree",
-                  "Agree",
-                  "Strongly agree"))
-
-smnet %>% 
+p1 <- smnet %>% 
   select(starts_with("Q14")) %>% 
+  print() %>% 
   gather(key = items, value = answer) %>% 
+  filter(answer != 6) %>% 
   mutate(answer = factor(recode(answer,
                                 `1` = "Strongly disagree",
                                 `2` = "Disagree",
                                 `3` = "Neither agree or disagree",
                                 `4` = "Agree",
-                                `5` = "Strongly agree",
-                                `6` = "Unsure"),
-                         levels = q14answerlev),
+                                `5` = "Strongly agree"),
+                         levels = rev(c("Strongly disagree",
+                                        "Disagree",
+                                        "Neither agree or disagree",
+                                        "Agree",
+                                        "Strongly agree"))),
          items = factor(items, levels = q14lev.items)) %>% 
   filter(complete.cases(.)) %>%
   ggplot(aes(x = items)) +
-  geom_bar(aes(fill = answer), position = "fill") +
-  scale_fill_manual(values = c("#9FDA3AFF", "#4AC16DFF", "#1FA187FF", "#277F8EFF", "#365C8DFF", 
-                               "#46337EFF", "#440154FF"), labels = rev(c("Unsure",
-                                                                         "Strongly disagree",
-                                                                         "Disagree",
-                                                                         "Neither agree\nor disagree",
-                                                                         "Agree",
-                                                                         "Strongly agree"))) +
+  geom_bar(aes(fill = answer), colour = "black", position = "fill", size = 0.2) +
+  scale_fill_manual(values = rev(c("#D73027","#FC8D59", "#ffffff", "#91BFDB", "#4575B4"))) +
   scale_x_discrete(labels = c("Restoring sediment inputs is crucial\nfor the maintenance of salt marshes\nunder increasing sea levels",
                               "There is a need for a more holistic approach\nto management, taking the entire catchment\ninto consideration",
                               "Saltmarsh restoration activities have been\nsuccessful in re-establishing\ndegraded wetlands",
@@ -403,10 +399,71 @@ smnet %>%
                               "Saltmarshes are an\nunder-valued resource",
                               "Saltmarshes are impacted\nby sea level rise",
                               "Saltmarshes are effectively\nprotected by existing legislation")) +
-  labs(fill = '', x = NULL, y = NULL, title = 'Q14. Please indicate your level of agreement with the following statements\nabout saltmarshes, the threats they face and their management') +
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(fill = '', x = NULL, y = NULL) +
   coord_flip() +
-  theme(plot.title = element_text(hjust = 0.6))
-# ggsave(filename = "Q14_Barplot_Stacked.pdf")
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.6),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.text=element_text(size=12),
+        axis.title=element_text(size=12,face="bold"),
+        legend.position = "none", 
+        legend.title = element_blank())
+
+p2 <- smnet %>% 
+  select(starts_with("Q14")) %>% 
+  print() %>% 
+  gather(key = items, value = answer) %>% 
+  mutate(answer = factor(recode(answer,
+                                `1` = "Strongly disagree",
+                                `2` = "Disagree",
+                                `3` = "Neither agree or disagree",
+                                `4` = "Agree",
+                                `5` = "Strongly agree",
+                                `6` = "Unsure"),
+                         levels = rev(c("Strongly disagree",
+                                        "Disagree",
+                                        "Neither agree or disagree",
+                                        "Agree",
+                                        "Strongly agree",
+                                        "Unsure"))),
+         items = factor(items, levels = q14lev.items)) %>% 
+  filter(complete.cases(.)) %>%
+  group_by(items, answer, .drop = FALSE) %>% 
+  summarise(n = n()) %>%
+  mutate(percent = (n/sum(n))) %>% 
+  filter(answer == "Unsure") %>% 
+  ggplot() +
+  geom_bar(aes(x = items, y = percent), stat = "identity", fill = "#FEE090", colour = "black", size = 0.2) + 
+  scale_x_discrete(labels = c("",
+                              "",
+                              "",
+                              "",
+                              "",
+                              "",
+                              "",
+                              "",
+                              "",
+                              "",
+                              "",
+                              "")) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  labs(fill = '', x = NULL, y = '% unsure', title = '') +
+  coord_flip() +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.6),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.text=element_text(size=12),
+        axis.title=element_text(size=12,face="bold"),
+        legend.position = "none", 
+        legend.title = element_blank())
+
+plot_grid(p1, p2, rel_widths = c(4, 1), align = "h")
+# ggsave(filename = "Figs/NEW_Q14_Barplot_Stacked.pdf")
+
+
 
 
 
@@ -451,7 +508,7 @@ smnet %>%
          items = factor(items)) %>%
   filter(complete.cases(.)) %>%
   ggplot(aes(x = items)) +
-  geom_bar(aes(fill = answer), position = "fill") +
+  geom_bar(aes(fill = answer), position = "fill", colour = "black", size = 0.2) +
   scale_fill_manual(values = rev(c("#395B8B", "#4EC173"))) +
   scale_x_discrete(labels = c("Agriculture", 
                               "Inspiration for the arts ",
@@ -469,10 +526,18 @@ smnet %>%
                               "Sense of place and\ncultural connections",
                               "Water quality regulation",
                               "Wild food foraging and/or\nwild fowling")) +
-  labs(fill = "", x = NULL, y = "Relative frequency of responses", title = 'Q17. What services and benefits are provided by saltmarsh in your region?') +
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(fill = "", x = NULL, y = NULL) +
   coord_flip() +
-  theme(plot.title = element_text(hjust = 0.6))
-# ggsave(filename = "Q17_Barplot_Stacked.pdf")
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.6),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.text=element_text(size=12),
+        axis.title=element_text(size=12,face="bold"),
+        legend.position = "none", 
+        legend.title = element_blank())
+# ggsave(filename = "Figs/NEW_Q17_Barplot_Stacked.pdf")
   
   
 
@@ -495,15 +560,57 @@ q18lev.items <- rev(c("Q18SMimportFoodProvision",
                       "Q18SMimportantSensePlace",
                       "Q18SMimportantReligion"))
 
-q18answerlev <- rev(c("Unsure",
-                  "Strongly disagree", 
-                  "Disagree", 
-                  "Neither agree or disagree", 
-                  "Agree", 
-                  "Strongly agree"))
-
-smnet %>% 
+p1 <- smnet %>% 
   select(starts_with("Q18")) %>% 
+  print() %>% 
+  gather(key = items, value = answer) %>% 
+  filter(answer != 6) %>% 
+  mutate(answer = factor(recode(answer,
+                                `1` = "Strongly disagree",
+                                `2` = "Disagree",
+                                `3` = "Neither agree or disagree",
+                                `4` = "Agree",
+                                `5` = "Strongly agree"), 
+                         levels = rev(c("Strongly disagree", 
+                                        "Disagree", 
+                                        "Neither agree or disagree", 
+                                        "Agree",
+                                        "Strongly agree"))),
+         items = factor(items, levels = q18lev.items)) %>% 
+  filter(complete.cases(.)) %>%
+  ggplot(aes(x = items)) +
+  geom_bar(aes(fill = answer), colour = "black", position = "fill", size = 0.2) +
+  scale_fill_manual(values = rev(c("#D73027","#FC8D59", "#ffffff", "#91BFDB", "#4575B4"))) +
+  scale_x_discrete(labels = c("Saltmarshes are important for spiritual,\nsacred and religious values",
+                              "Saltmarshes are important for\na sense of place",
+                              "Saltmarshes are important to\ninspire culture art and design",
+                              "Saltmarshes are important to\nprotect cultural heritage",
+                              "Saltmarshes are a valuable environment\nfor recreation and tourism",
+                              "Saltmarshes are important for\nsocietal health and wellbeing",
+                              "Saltmarshes improve\nwater quality",
+                              "Saltmarshes are important\nhabitats for wildlife",
+                              "Saltmarshes can help to prevent\ncoastal erosion",
+                              "Saltmarshes provide food\nand shelter for young fish",
+                              "Saltmarsh plants are a\nvaluable resource",
+                              "Saltmarshes offer protection\nfrom flooding",
+                              "Saltmarshes are important\nfor food provision")) +
+  scale_y_continuous(labels = scales::percent_format()) +
+  # labs(fill = '', x = NULL, y = NULL, title = 'Please indicate how much you agree with the following statements about salt marshes,\nthe threats they face and their management') +
+  ylab("") + 
+  xlab("") +
+  coord_flip() +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.6),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.text=element_text(size=12),
+        axis.title=element_text(size=12,face="bold"),
+        legend.position = "none", 
+        legend.title = element_blank())
+
+p2 <- smnet %>% 
+  select(starts_with("Q18")) %>% 
+  print() %>% 
   gather(key = items, value = answer) %>% 
   mutate(answer = factor(recode(answer,
                                 `1` = "Strongly disagree",
@@ -511,37 +618,48 @@ smnet %>%
                                 `3` = "Neither agree or disagree",
                                 `4` = "Agree",
                                 `5` = "Strongly agree",
-                                `6` = "Unsure"),
-                         levels = q18answerlev),
+                                `6` = "Unsure"), 
+                         levels = rev(c("Strongly disagree", 
+                                        "Disagree", 
+                                        "Neither agree or disagree", 
+                                        "Agree",
+                                        "Strongly agree", 
+                                        "Unsure"))),
          items = factor(items, levels = q18lev.items)) %>% 
-  filter(complete.cases(.)) %>%
-  ggplot(aes(x = items)) +
-  geom_bar(aes(fill = answer), position = "fill") +
-  scale_fill_manual(values = c("#9FDA3AFF", "#4AC16DFF", "#1FA187FF", "#277F8EFF", "#365C8DFF", 
-                               "#46337EFF", "#440154FF"), labels = rev(c("Unsure",
-                                                                         "Strongly disagree", 
-                                                                         "Disagree", 
-                                                                         "Neither agree\nor disagree", 
-                                                                         "Agree", 
-                                                                         "Strongly agree"))) +
-  scale_x_discrete(labels = c("Saltmarshes are important for spiritual,\nsacred and religious values",
-                              "Saltmarshes are important for\na sense of place",
-                              "Saltmarshes are important to\ninspire culture art and design",
-                              "Saltmarshes are important to\nprotect cultural heritage",
-                              "Saltmarshes are a valuable environment\nfor recreation and tourism",
-                              "Saltmarshes are important for\nsocietal health and wellbeing",
-                              "Saltmarshes improve water\nquality",
-                              "Saltmarshes are important\nhabitats for wildlife",
-                              "Saltmarshes can help to prevent\ncoastal erosion",
-                              "Saltmarshes provide food\nand shelter for young fish",
-                              "Saltmarsh plants are a\nvaluable resource",
-                              "Saltmarshes offer protection\nfrom flooding",
-                              "Saltmarshes are important\nfor food provision")) +
-  labs(fill = '', x = NULL, y = NULL, title = 'Q18. Please indicate how much you agree with the following statements\nabout saltmarshes in your region and their contribution to society') +
+  filter(complete.cases(.)) %>% 
+  group_by(items, answer) %>% 
+  summarise(n = n()) %>% 
+  mutate(percent = (n/sum(n))) %>% 
+  filter(answer == "Unsure") %>% 
+  ggplot() +
+  geom_bar(aes(x = items, y = percent), stat = "identity", fill = "#FEE090", colour = "black", size = 0.2) + 
+  scale_x_discrete(labels = c("",
+                              "",
+                              "",
+                              "",
+                              "",
+                              "",
+                              "",
+                              "",
+                              "",
+                              "",
+                              "",
+                              "",
+                              "")) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  labs(fill = '', x = NULL, y = '% unsure', title = '') +
   coord_flip() +
-  theme(plot.title = element_text(hjust = 0.6))
-# ggsave(filename = "Q18_Barplot_Stacked.pdf")
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.6),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.text=element_text(size=12),
+        axis.title=element_text(size=12,face="bold"),
+        legend.position = "none", 
+        legend.title = element_blank())
 
+plot_grid(p1, p2, rel_widths = c(4, 1), align = "h")
+# ggsave(filename = "Figs/NEW_Q18_Barplot_Stacked.pdf")
 
 
 
@@ -550,28 +668,26 @@ smnet %>%
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
 
-smnet %>% 
+p1 <- smnet %>% 
   select(starts_with("Q19")) %>% 
   print() %>% 
   gather(key = items, value = answer) %>% 
+  filter(answer != 6) %>% 
   mutate(answer = factor(recode(answer, `1` = "No benefit", 
                                 `2` = "Slightly beneficial", 
                                 `3`= "Somewhat beneficial", 
                                 `4` = "Moderately beneficial",
-                                `5` = "Very beneficial", 
-                                `6` = "Unsure"),
-                         levels = rev(c("Unsure",
-                                    "No benefit", 
-                                    "Slightly beneficial",
-                                    "Somewhat beneficial",
-                                    "Moderately beneficial",
-                                    "Very beneficial"))),
+                                `5` = "Very beneficial"),
+                         levels = rev(c("No benefit", 
+                                        "Slightly beneficial",
+                                        "Somewhat beneficial",
+                                        "Moderately beneficial",
+                                        "Very beneficial"))),
          items = factor(items)) %>% 
   filter(complete.cases(.)) %>%
   ggplot(aes(x = items)) +
-  geom_bar(aes(fill = answer), position = "fill", na.rm = T) +
-  scale_fill_manual(values = c("#9FDA3AFF", "#4AC16DFF", "#1FA187FF", "#277F8EFF", "#365C8DFF", 
-                               "#46337EFF", "#440154FF")) + 
+  geom_bar(aes(fill = answer), colour = "black", position = "fill", size = 0.2) +
+  scale_fill_manual(values = rev(c("#D73027","#FC8D59", "#ffffff", "#91BFDB", "#4575B4"))) +
   scale_x_discrete(labels = c("Agricultural land",
                               "Coastal protection\nfrom flooding",
                               "Carbon storage",
@@ -587,12 +703,73 @@ smnet %>%
                               "Reducing impacts of waste\nand pollution",
                               "Tourism",
                               "Wild food and foraging")) +
-  labs(fill = '', x = NULL, y = NULL, title = 'Q19. Please indicate the level of importance of the benefits\nand services provided by saltmarshes to society') +
+  scale_y_continuous(labels = scales::percent_format()) +
+  # labs(fill = '', x = NULL, y = NULL, title = 'Please indicate how much you agree with the following statements about salt marshes,\nthe threats they face and their management') +
+  ylab("") + 
+  xlab("") +
   coord_flip() +
-  theme(plot.title = element_text(hjust = 0.6))
-# ggsave(filename = "Q19_Barplot_Stacked.pdf")
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.6),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.text=element_text(size=12),
+        axis.title=element_text(size=12,face="bold"),
+        legend.position = "none", 
+        legend.title = element_blank())
 
+p2 <- smnet %>% 
+  select(starts_with("Q19")) %>% 
+  print() %>% 
+  gather(key = items, value = answer) %>% 
+  mutate(answer = factor(recode(answer, `1` = "No benefit", 
+                                `2` = "Slightly beneficial", 
+                                `3`= "Somewhat beneficial", 
+                                `4` = "Moderately beneficial",
+                                `5` = "Very beneficial",
+                                `6` = "Unsure"),
+                         levels = rev(c("No benefit", 
+                                        "Slightly beneficial",
+                                        "Somewhat beneficial",
+                                        "Moderately beneficial",
+                                        "Very beneficial", 
+                                        "Unsure"))),
+         items = factor(items)) %>% 
+  filter(complete.cases(.)) %>%
+  group_by(items, answer, .drop = FALSE) %>% 
+  summarise(n = n()) %>%
+  mutate(percent = (n/sum(n))) %>% 
+  filter(answer == "Unsure") %>% 
+  ggplot() +
+  geom_bar(aes(x = items, y = percent), stat = "identity", fill = "#FEE090", colour = "black", size = 0.2) + 
+  scale_x_discrete(labels = c("",
+                              "",
+                              "",
+                              "",
+                              "",
+                              "",
+                              "",
+                              "",
+                              "",
+                              "",
+                              "",
+                              "",
+                              "", 
+                              "", 
+                              "")) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  labs(fill = '', x = NULL, y = '% unsure', title = '') +
+  coord_flip() +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.6),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.text=element_text(size=12),
+        axis.title=element_text(size=12,face="bold"),
+        legend.position = "none", 
+        legend.title = element_blank())
 
+plot_grid(p1, p2, rel_widths = c(4, 1), align = "h")
+# ggsave(filename = "Figs/NEW_Q19_Barplot_Stacked.pdf")
 
 
 
